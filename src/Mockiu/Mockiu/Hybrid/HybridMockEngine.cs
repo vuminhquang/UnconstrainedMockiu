@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using HarmonyLib;
 using Moq;
 
@@ -8,6 +9,7 @@ namespace Mockiu.Hybrid
     {
         private readonly Harmony _harmony;
         private readonly string _instanceId;
+        private readonly ConcurrentBag<IDisposable> _mockSetups = new ConcurrentBag<IDisposable>();
 
         public HybridMockEngine(string instanceId)
         {
@@ -17,19 +19,23 @@ namespace Mockiu.Hybrid
 
         public IMockSetup<T> Mock<T>() where T : class
         {
-            if (typeof(T).IsInterface || typeof(T).IsAbstract)
+            if (!typeof(T).IsInterface && !typeof(T).IsAbstract)
             {
-                var mock = new Mock<T>();
-                return new MoqMockSetup<T>(mock);
+                var setup = new HarmonyMockSetup<T>(_harmony, typeof(T));
+                _mockSetups.Add(setup);
+                return setup;
             }
-            else
-            {
-                return new HarmonyMockSetup<T>(_harmony, typeof(T));
-            }
+
+            var mock = new Mock<T>();
+            return new MoqMockSetup<T>(mock);
         }
 
         public void Dispose()
         {
+            foreach (var mockSetup in _mockSetups)
+            {
+                mockSetup.Dispose();
+            }
             _harmony.UnpatchAll(_instanceId);
         }
     }
