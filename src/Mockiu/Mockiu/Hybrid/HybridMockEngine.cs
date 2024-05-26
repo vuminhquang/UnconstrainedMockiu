@@ -17,8 +17,17 @@ namespace Mockiu.Hybrid
             _harmony = new Harmony(instanceId);
         }
 
-        public IMockSetup<T> Mock<T>() where T : class
+        public IMockSetup<T> Mock<T>(IMockSetup<T>? preferredMockSetup = null) where T : class
         {
+            if (preferredMockSetup != null)
+            {
+                if (!(preferredMockSetup is MoqMockSetup<T>))
+                {
+                    _mockSetups.Add((preferredMockSetup as IDisposable)!);
+                }
+                return preferredMockSetup;
+            }
+
             if (!typeof(T).IsInterface && !typeof(T).IsAbstract)
             {
                 var setup = new HarmonyMockSetup<T>(_harmony, typeof(T));
