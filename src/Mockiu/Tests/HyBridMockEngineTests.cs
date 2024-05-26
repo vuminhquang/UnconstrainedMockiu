@@ -1,14 +1,7 @@
 using System.Reflection;
-using System.Runtime.Serialization;
-using HarmonyLib;
 using Mockiu.Hybrid;
-using Moq;
 
 namespace Tests;
-
-using System;
-using Xunit;
-
 public class ExampleTests
 {
     [Fact]
@@ -47,8 +40,34 @@ public class ExampleTests
 
         Assert.Equal(99, barNumber);
     }
+    
+    [Fact]
+    public void SetupStaticMethod_ShouldReuseHarmonyMockSetup()
+    {
+        using var engine = new HybridMockEngine(Guid.NewGuid().ToString());
+        // Arrange
+        engine.SetupStaticMethod(typeof(MyStaticClass), nameof(MyStaticClass.MyStaticMethod), new Func<string>(() => "Mocked"));
+        engine.SetupStaticMethod(typeof(MyStaticClass), nameof(MyStaticClass.MyOtherStaticMethod), new Func<int>(() => 99));
+
+        // Act
+        var result1 = MyStaticClass.MyStaticMethod();
+        var result2 = MyStaticClass.MyOtherStaticMethod();
+
+        // Assert
+        Assert.Equal("Mocked", result1);
+        Assert.Equal(99, result2);
+
+        // Check that only one HarmonyMockSetup was created for MyStaticClass
+        var field = typeof(HybridMockEngine).GetField("_harmonySetups", BindingFlags.NonPublic | BindingFlags.Instance);
+        var harmonySetups = (Dictionary<Type, HarmonyMockSetup<object>>)field.GetValue(engine);
+        
+        Assert.Single(harmonySetups);
+        Assert.True(harmonySetups.ContainsKey(typeof(MyStaticClass)));
+    }
 }
 
+
+// --- Test classes and interfaces ---
 
 public interface IFoo
 {
@@ -61,4 +80,17 @@ public class Bar
 {
     public virtual void DoSomething() { /* Original implementation */ }
     public virtual int GetNumber() { return 0; /* Original implementation */ }
+}
+
+public static class MyStaticClass
+{
+    public static string MyStaticMethod()
+    {
+        return "Original";
+    }
+
+    public static int MyOtherStaticMethod()
+    {
+        return 42;
+    }
 }

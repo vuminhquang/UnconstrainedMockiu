@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Reflection;
 using HarmonyLib;
 using Moq;
 
@@ -10,6 +12,7 @@ namespace Mockiu.Hybrid
         private readonly Harmony _harmony;
         private readonly string _instanceId;
         private readonly ConcurrentBag<IDisposable> _mockSetups = new ConcurrentBag<IDisposable>();
+        private readonly Dictionary<Type, HarmonyMockSetup<object>> _harmonySetups = new Dictionary<Type, HarmonyMockSetup<object>>();
 
         public HybridMockEngine(string instanceId)
         {
@@ -37,6 +40,22 @@ namespace Mockiu.Hybrid
 
             var mock = new Mock<T>();
             return new MoqMockSetup<T>(mock);
+        }
+
+        public void SetupStaticMethod(Type type, string methodName, Delegate implementation)
+        {
+            var methodInfo = type.GetMethod(methodName, BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
+            if (methodInfo == null)
+                throw new ArgumentException($"The method '{methodName}' could not be found in type '{type.FullName}'.");
+
+            if (!_harmonySetups.TryGetValue(type, out var setup))
+            {
+                setup = new HarmonyMockSetup<object>(_harmony, type);
+                _harmonySetups[type] = setup;
+                _mockSetups.Add(setup);
+            }
+
+            setup.SetupStaticMethod(methodInfo, implementation);
         }
 
         public void Dispose()

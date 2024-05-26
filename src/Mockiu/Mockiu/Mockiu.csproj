@@ -1,12 +1,17 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
+        <Authors>vu.minh.quang@outlook.com</Authors>
         <TargetFramework>netstandard2.1</TargetFramework>
         <Nullable>enable</Nullable>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <PackageId>Mockiu</PackageId>
+        <Description>Mock static, private, and sealed methods freely, can use with Moq. Unconstrained Mockiu allows for isolated and concurrent/repeatable unit testing without redesigning your software.</Description>
+        <PackageProjectUrl>https://github.com/vuminhquang/UnconstrainedMockiu</PackageProjectUrl>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Castle.Core" Version="5.1.1" />
       <PackageReference Include="Lib.Harmony" Version="2.3.3" />
       <PackageReference Include="Moq" Version="4.20.70" />
     </ItemGroup>

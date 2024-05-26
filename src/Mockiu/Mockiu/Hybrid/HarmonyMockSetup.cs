@@ -46,6 +46,13 @@ namespace Mockiu.Hybrid
             return this;
         }
 
+        public void SetupStaticMethod(MethodInfo method, Delegate implementation)
+        {
+            if (!method.IsStatic)
+                throw new ArgumentException("The provided method is not static.", nameof(method));
+            PatchMethod(method, implementation, nameof(MethodReplacements.MethodReplacement));
+        }
+        
         private void PatchMethod(MethodBase method, Delegate implementation, string replacementMethodName, BindingFlags bindingFlags = BindingFlags.Static | BindingFlags.Public)
         {
             var patchProcessor = _harmonyInstance.CreateProcessor(method);
