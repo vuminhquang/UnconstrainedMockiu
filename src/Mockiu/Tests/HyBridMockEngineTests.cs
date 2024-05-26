@@ -1,5 +1,6 @@
 using System.Reflection;
 using Mockiu.Hybrid;
+using Moq;
 
 namespace Tests;
 public class ExampleTests
@@ -20,8 +21,7 @@ public class ExampleTests
 
         // Mocking Bar using Harmony
         var barMock = engine.Mock<Bar>()
-            .Setup(bar => bar.DoSomething(), () => Console.WriteLine("Mocked Bar DoSomething"))
-            .Setup(bar => bar.GetNumber(), () => 99);
+            .Setup(bar => bar.DoSomething(), () => Console.WriteLine("Mocked Bar DoSomething"));
 
         // Retrieve the mocked object using GetObject
         var bar = barMock.GetObject();
@@ -36,9 +36,46 @@ public class ExampleTests
 
         // Test the mocked behavior for Bar
         bar.DoSomething();  // Should print "Mocked Bar DoSomething"
-        var barNumber = bar.GetNumber();  // Should return 99
+        var barNumber = bar.GetNumber(2);  // Should return 0
 
-        Assert.Equal(99, barNumber);
+        Assert.Equal(0, barNumber);
+    }
+    
+    [Fact]
+    public void MockingFooUsingMoq_ShouldInvokeMockedDoSomething()
+    {
+        var engine = new HybridMockEngine("TestInstance");
+
+        // Mocking Bar using Harmony
+        var barMock = engine.Mock<Bar>()
+            .Setup(bar => bar.DoSomething(), () => Console.WriteLine("Mocked Bar DoSomething"))
+            .Setup(bar => bar.GetNumber(It.IsAny<int>()), (int a) => a * 2);
+
+        var bar = barMock.GetObject();
+        bar.DoSomething(); // Outputs: Mocked Bar DoSomething
+        int result = bar.GetNumber(5); // result is 10
+        Assert.Equal(10, result);
+    }
+    
+    [Fact]
+    public void MockingBarUsingHarmony_ShouldInvokeMockedDoSomething()
+    {
+        using var engine = new HybridMockEngine(Guid.NewGuid().ToString());
+        // Redirect console output to capture the mocked method's output
+        using (var sw = new StringWriter())
+        {
+            Console.SetOut(sw);
+
+            // Mocking Bar using Harmony
+            var barMock = engine.Mock<Bar>()
+                .Setup(bar => bar.DoSomething(), () => Console.WriteLine("Mocked Bar DoSomething"));
+            
+            var barInstance = barMock.GetObject();
+            barInstance.DoSomething();
+
+            var output = sw.ToString().Trim();
+            Assert.Equal("Mocked Bar DoSomething", output);
+        }
     }
     
     [Fact]
@@ -79,7 +116,7 @@ public interface IFoo
 public class Bar
 {
     public virtual void DoSomething() { /* Original implementation */ }
-    public virtual int GetNumber() { return 0; /* Original implementation */ }
+    public virtual int GetNumber(int a) { return 0; /* Original implementation */ }
 }
 
 public static class MyStaticClass

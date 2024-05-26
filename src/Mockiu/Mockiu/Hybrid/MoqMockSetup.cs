@@ -31,11 +31,12 @@ namespace Mockiu.Hybrid
             return this;
         }
 
-        public IMockSetup<T> SetupConstructor(Func<T> implementation)
+        public IMockSetup<T> Setup<T1, TResult>(Expression<Func<T, TResult>> setup, Func<T1, TResult> func)
         {
-            throw new NotSupportedException("Moq does not support constructor replacement directly. Use Harmony for this.");
+            _mock.Setup(setup).Returns((T1 arg1) => func(arg1));
+            return this;
         }
-        
+
         public T GetObject()
         {
             return _mock.Object;
