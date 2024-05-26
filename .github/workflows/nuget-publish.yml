@@ -3,12 +3,11 @@ name: Publish NuGet Package
 on:
   push:
     tags:
-      - 'v*'  # Trigger the workflow on version tags
+      - 'v*'  # Matches tags starting with "v"
 
 jobs:
   publish:
     runs-on: ubuntu-latest
-
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
@@ -16,16 +15,16 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v3
       with:
-        dotnet-version: 8.0.x
+        dotnet-version: '8.0.x'  # Specify the .NET version you're using
 
     - name: Restore dependencies
-      run: dotnet restore
+      run: dotnet restore ./src/Mockiu/Mockiu/Mockiu.csproj  # Specify the path to your .csproj file
 
     - name: Build
-      run: dotnet build --configuration Release --no-restore
+      run: dotnet build --configuration Release --no-restore ./src/Mockiu/Mockiu/Mockiu.csproj  # Specify the path to your .csproj file
 
     - name: Pack
-      run: dotnet pack --configuration Release --no-restore --output ./nupkg
+      run: dotnet pack --configuration Release --no-restore --output ./nupkg ./src/Mockiu/Mockiu/Mockiu.csproj  # Specify the path to your .csproj file
 
     - name: Publish NuGet package
       env:
