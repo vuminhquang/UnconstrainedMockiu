@@ -1,4 +1,4 @@
-# UnconstrainedMockiu
+# Unconstrained Mockiu
 
 Mock anything you want, static, private, SEALED, ...
 
