@@ -9,6 +9,7 @@
         <Description>Mock static, private, and sealed methods freely, can use with Moq. Unconstrained Mockiu allows for isolated and concurrent/repeatable unit testing without redesigning your software.</Description>
         <PackageProjectUrl>https://github.com/vuminhquang/UnconstrainedMockiu</PackageProjectUrl>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <Version>2.0.0</Version>
     </PropertyGroup>
 
     <ItemGroup>
